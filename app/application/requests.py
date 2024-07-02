@@ -1,5 +1,11 @@
-from domain.schemas import RecipeSchema
+from pydantic import BaseModel
 from pydantic import Field
+from typing import List
 
-class RequestRecipe:
-    parameter: RecipeSchema = Field(...)
+class CreateDish(BaseModel):
+    id: int
+    name: str
+    description: str
+    instructions: str
+    ingredients: List[int]
+    ingredients_quantities: List[int]
