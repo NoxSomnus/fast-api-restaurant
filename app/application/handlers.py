@@ -2,8 +2,9 @@ from sqlalchemy.orm import Session
 from domain.aggregates import *
 from domain.schemas import *
 from application.requests import *
+from fastapi import HTTPException
 
-# PLATOS
+#-------------------------------------------- PLATOS ---------------------------------------------------
 def create_dish(request: CreateDish, db: Session):
     # Crear el plato
     dish = Dish(name=request.name, description=request.description, instructions=request.instructions, menu_id=request.menu_id)
@@ -65,7 +66,7 @@ def delete_dish(id: int, db: Session):
     db.commit()
     return None
 
-# INGREDIENTS
+#---------------------------- INGREDIENTS -------------------------------------------------------------
 def create_ingredient(request: IngredientSchema, db: Session):
     ingredient = Ingredient(id=request.id,name=request.name)
     db.add(ingredient)
@@ -140,4 +141,63 @@ def delete_inventory(id: int, db: Session):
     db.delete(inventory)
     db.commit()
     return None
+
+#----------------------------------------------User--------------------------------------------------
+
+def create_user(request: UserSchema, db: Session):
+    user = db.query(User).filter(User.email == request.email).first()
+    if user:
+        raise HTTPException(status_code=409, detail="Email in use")
+    
+    user = db.query(User).filter(User.username == request.username).first()
+    if user:
+        raise HTTPException(status_code=409, detail="Username already exists")
+
+    new_user = User(name=request.name, email=request.email, password=request.password, username=request.username, role=request.role)
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+    return new_user
+
+def get_user_by_id(id: int, db: Session):    
+    user = db.query(User).filter(User.id == id).first()
+    return user
+
+def update_user(id: int, request: UserSchema, db: Session):
+    user = db.query(User).filter(User.id == id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    user.name = request.name
+    user.email = request.email
+    user.password = request.password
+    user.username = request.username
+    user.role = request.role
+    db.commit()
+    db.refresh(user)
+    return user
+
+def delete_user(id: int, db: Session):
+    user = db.query(User).filter(User.id == id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    db.delete(user)
+    db.commit()
+    return None
+
+#----------------------------------------------Order--------------------------------------------------
+
+def create_order(request: OrderSchema, db: Session):
+    user = db.query(User).filter(User.id == request.user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    dish = db.query(Dish).filter(Dish.id == request.dish_id).first()
+    if not dish:
+        raise HTTPException(status_code=404, detail="Dish not found")
+    
+    order = Order(user_id=user.id, dish_id=dish.id, quantity=request.quantity, status=request.status)
+    db.add(order)
+    db.commit()
+    db.refresh(order)
+    return order
 

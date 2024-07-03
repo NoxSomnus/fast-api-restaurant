@@ -4,6 +4,19 @@ from sqlalchemy.sql.expression import text
 from sqlalchemy.sql.sqltypes import TIMESTAMP
 from sqlalchemy import ForeignKey
 from infrastructure.config import Base
+from enum import Enum
+
+
+class OrderStatus(str, Enum):
+    PENDING = 'pending'
+    CONFIRMED = 'confirmed'
+    COMPLETED = 'completed'
+
+class Roles(str, Enum):
+    ADMIN = 'admin'
+    CHEF = 'chef'
+    WAITER = 'waiter'
+    CLIENT = 'client'
 
 class Ingredient(Base):
     __tablename__ = "ingredients"
@@ -52,5 +65,29 @@ class Inventory(Base):
     created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
     updated_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
 
+class User(Base):
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True, nullable=False)
+    name = Column(String, nullable=False)
+    username = Column(String, nullable=False)
+    email = Column(String, nullable=False)
+    password = Column(String, nullable=False)
+    role = Column(String, nullable=False)
+    created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
+    updated_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
+
+
+
+class Order(Base):
+    __tablename__ = "orders"
+
+    id = Column(Integer, primary_key=True, nullable=False)
+    dish_id = Column(Integer, ForeignKey('dishes.id'), nullable=False)
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    quantity = Column(Integer, nullable=False)
+    status = Column(String, nullable=False)
+    created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
+    updated_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
 
 
