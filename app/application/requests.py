@@ -9,3 +9,5 @@ class CreateDish(BaseModel):
     instructions: str
     ingredients: List[int]
     ingredients_quantities: List[int]
+    menu_id: int
+

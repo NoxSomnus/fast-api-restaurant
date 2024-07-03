@@ -28,6 +28,8 @@ class Dish(Base):
 
     ingredients = relationship("Ingredient", secondary="dish_ingredient", back_populates="dishes")
 
+    menu_id = Column(Integer, primary_key=False, nullable=False)
+
 class Dish_Ingredient(Base):
     __tablename__ = 'dish_ingredient'
     dish_id = Column(Integer, ForeignKey('dishes.id'), primary_key=True)
@@ -39,11 +41,16 @@ class Menu(Base):
 
     id = Column(Integer, primary_key=True, nullable=False)
     name = Column(String, nullable=False)
+    description = Column(String, nullable=False)
     created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
 
-class Menu_Dish(Base):
-    __tablename__ = 'menu_dish'
-    menu_id = Column(Integer, ForeignKey('menus.id'), primary_key=True)
-    dish_id = Column(Integer, ForeignKey('dishes.id'), primary_key=True)
+class Inventory(Base):
+    __tablename__ = "inventory"
+
+    ingredient_id = Column(Integer, primary_key=True, nullable=False)
+    quantity = Column(Integer, nullable=False)
+    created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
+    updated_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
+
 
 
