@@ -37,6 +37,22 @@ async def get_ingredient_by_id(id: int, db: Session = Depends(get_db)):
     return Response(code="200", status="success", message="Sucess get data", result={ingredient.id,ingredient.name}).dict(exclude_none=True)
 
 
+@router.get('/ingredients')
+async def get_all_ingredients(db: Session = Depends(get_db)):
+    ingredients = handlers.get_all_ingredients(db)
+    return Response(code="200", status="success", message="Sucess get data", result=ingredients).dict(exclude_none=True)
+
+
+@router.put('/ingredients/{id}')
+async def update_ingredient(id: int, request: str, db: Session = Depends(get_db)):
+    handlers.update_ingredient(id, request, db)
+    return Response(code="200", status="success", message="Ingredient updated successfully", result=None).dict(exclude_none=True)
+
+@router.delete('/ingredients/{id}')
+async def delete_ingredient(id: int, db: Session = Depends(get_db)):
+    handlers.delete_ingredient(id, db)
+    return Response(code="200", status="success", message="Ingredient deleted successfully", result=None).dict(exclude_none=True)
+
 #----------------------------------------------PLATOS--------------------------------------------------
 @router.get('/dishes/{id}', response_model=Response)
 async def get_dish_by_id(id: int, db: Session = Depends(get_db)):
@@ -64,6 +80,12 @@ async def get_dish_by_id(id: int, db: Session = Depends(get_db)):
         "menu_id": dish.menu_id
     }
     return Response(code="200", status="success", message="Sucess get data", result=result).dict(exclude_none=True)
+
+
+@router.get('/dishes')
+async def get_all_dishes(db: Session = Depends(get_db)):
+    dishes = handlers.get_all_dishes(db)
+    return Response(code="200", status="success", message="Sucess get data", result=dishes).dict(exclude_none=True)
 
 @router.post('/dishes')
 async def create_dish(request: CreateDish, db: Session = Depends(get_db)):
@@ -95,6 +117,12 @@ async def get_menu_by_id(id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Menu not found")
     return Response(code="200", status="success", message="Sucess get data", result={menu.id,menu.name}).dict(exclude_none=True)
 
+
+@router.get('/menus')
+async def get_all_menus(db: Session = Depends(get_db)):
+    menus = handlers.get_all_menus(db)
+    return Response(code="200", status="success", message="Sucess get data", result=menus).dict(exclude_none=True)
+
 @router.delete('/menus/{id}')
 async def delete_menu(id: int, db: Session = Depends(get_db)):
     handlers.delete_menu(id, db)
@@ -118,6 +146,12 @@ async def get_inventory_by_id(id: int, db: Session = Depends(get_db)):
     if not inventory:
         raise HTTPException(status_code=404, detail="Inventory not found")
     return Response(code="200", status="success", message="Sucess get data", result={"ingredient quantity",inventory.quantity}).dict(exclude_none=True)
+
+
+@router.get('/inventories')
+async def get_all_inventories(db: Session = Depends(get_db)):
+    inventories = handlers.get_all_inventories(db)
+    return Response(code="200", status="success", message="Sucess get data", result=inventories).dict(exclude_none=True)
 
 @router.put('/inventories/{id}')  
 async def update_inventory(id: int, request: InventorySchema, db: Session = Depends(get_db)):
@@ -144,6 +178,12 @@ async def get_user_by_id(id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="User not found")
     return Response(code="200", status="success", message="Sucess get data", result=user).dict(exclude_none=True)
 
+
+@router.get('/users')
+async def get_all_users(db: Session = Depends(get_db)):
+    users = handlers.get_all_users(db)
+    return Response(code="200", status="success", message="Sucess get data", result=users).dict(exclude_none=True)
+
 @router.put('/users/{id}')  
 async def update_user(id: int, request: UserSchema, db: Session = Depends(get_db)):
     handlers.update_user(id, request, db)
@@ -161,3 +201,27 @@ async def delete_user(id: int, db: Session = Depends(get_db)):
 async def create_order(request: OrderSchema, db: Session = Depends(get_db)):
     handlers.create_order(request, db)
     return Response(code="200", status="success", message="Order created successfully", result=None).dict(exclude_none=True)
+
+@router.get('/orders/{id}')
+async def get_order_by_id(id: int, db: Session = Depends(get_db)):
+    order = handlers.get_order_by_id(id, db)
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+    return Response(code="200", status="success", message="Sucess get data", result=order).dict(exclude_none=True)
+
+@router.get('/orders/user/{user_id}')
+async def get_orders_by_user_id(user_id: int, db: Session = Depends(get_db)):
+    orders = handlers.get_orders_by_user_id(user_id, db)
+    if not orders:
+        raise HTTPException(status_code=404, detail="Orders not found")
+    return Response(code="200", status="success", message="Sucess get data", result=orders).dict(exclude_none=True)
+
+@router.put('/orders/{id}')  
+async def update_order(id: int, status: str, db: Session = Depends(get_db)):
+    handlers.update_order(id, status, db)
+    return Response(code="200", status="success", message="Order updated successfully", result=None).dict(exclude_none=True)
+
+
+
+
+
