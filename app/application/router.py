@@ -126,4 +126,37 @@ async def delete_inventory(id: int, db: Session = Depends(get_db)):
     return Response(code="200", status="success", message="Inventory deleted successfully", result=None).dict(exclude_none=True)
 
 
+#--------------------------------USERS---------------------------------
+
+@router.post('/users')
+async def create_user(request: UserSchema, db: Session = Depends(get_db)):
+    handlers.create_user(request, db)
+    return Response(code="200", status="success", message="User created successfully", result=None).dict(exclude_none=True)
+
+@router.get('/users/{id}')
+async def get_user_by_id(id: int, db: Session = Depends(get_db)):
+    user = handlers.get_user_by_id(id, db)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return Response(code="200", status="success", message="Sucess get data", result=user).dict(exclude_none=True)
+
+@router.put('/users/{id}')  
+async def update_user(id: int, request: UserSchema, db: Session = Depends(get_db)):
+    handlers.update_user(id, request, db)
+    return Response(code="200", status="success", message="User updated successfully", result=None).dict(exclude_none=True)
+
+@router.delete('/users/{id}')
+async def delete_user(id: int, db: Session = Depends(get_db)):
+    handlers.delete_user(id, db)
+    return Response(code="200", status="success", message="User deleted successfully", result=None).dict(exclude_none=True)
+
+
+#--------------------------------ORDERS---------------------------------
+
+@router.post('/orders')
+async def create_order(request: OrderSchema, db: Session = Depends(get_db)):
+    handlers.create_order(request, db)
+    return Response(code="200", status="success", message="Order created successfully", result=None).dict(exclude_none=True)
+
+
 

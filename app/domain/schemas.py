@@ -1,6 +1,5 @@
 from typing import Optional, List, Generic, TypeVar
-from pydantic import BaseModel, Field
-
+from pydantic import BaseModel, constr
 
 class Config:
     orm_mode = True
@@ -46,6 +45,31 @@ class MenuSchema(BaseModel):
 class InventorySchema(BaseModel):
     ingredient_id: int
     quantity: int
+    created_at: Optional[str]
+    updated_at: Optional[str]
+
+    class Config:
+        pass
+
+class UserSchema(BaseModel):
+    id: int
+    name: str
+    username: str
+    email: str
+    password: str
+    role: str
+    created_at: Optional[str]
+    updated_at: Optional[str]
+
+    class Config:
+        pass
+
+class OrderSchema(BaseModel):
+    id: int
+    user_id: int
+    dish_id: int
+    quantity: int
+    status: str
     created_at: Optional[str]
     updated_at: Optional[str]
 
