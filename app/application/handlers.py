@@ -3,10 +3,10 @@ from domain.aggregates import *
 from domain.schemas import *
 from application.requests import *
 
-
+# PLATOS
 def create_dish(request: CreateDish, db: Session):
     # Crear el plato
-    dish = Dish(name=request.name, description=request.description, instructions=request.instructions)
+    dish = Dish(name=request.name, description=request.description, instructions=request.instructions, menu_id=request.menu_id)
     db.add(dish)
     db.flush()  # Asigna un ID al plato sin hacer commit
 
@@ -28,10 +28,44 @@ def create_dish(request: CreateDish, db: Session):
 
 def get_dish_by_id(id: int, db: Session):
     dish = db.query(Dish).filter(Dish.id == id).first()
-    for i in dish.ingredients:
-        print(i.name)
     return dish
 
+def update_dish(id: int, request: CreateDish, db: Session):
+    dish = db.query(Dish).filter(Dish.id == id).first()
+    if not dish:
+        raise HTTPException(status_code=404, detail="Dish not found")
+        
+    dish.name = request.name
+    dish.description = request.description
+    dish.instructions = request.instructions
+    
+    # Eliminar los ingredientes existentes para este plato
+    db.query(Dish_Ingredient).filter(Dish_Ingredient.dish_id == dish.id).delete()
+    
+    # Procesar los ingredientes actualizados
+    for ingredient_id, quantity in zip(request.ingredients, request.ingredients_quantities):
+        registered_ingredient = db.query(Ingredient).filter(Ingredient.id == ingredient_id).first()
+        if registered_ingredient:
+            dish_ingredient = Dish_Ingredient(
+                dish_id=dish.id,
+                ingredient_id=registered_ingredient.id,
+                quantity=quantity
+            )
+            db.add(dish_ingredient)
+
+    db.commit()
+    db.refresh(dish)
+    return dish
+
+def delete_dish(id: int, db: Session):
+    dish = db.query(Dish).filter(Dish.id == id).first()
+    if not dish:
+        raise HTTPException(status_code=404, detail="Dish not found")
+    db.delete(dish)
+    db.commit()
+    return None
+
+# INGREDIENTS
 def create_ingredient(request: IngredientSchema, db: Session):
     ingredient = Ingredient(id=request.id,name=request.name)
     db.add(ingredient)
@@ -43,4 +77,67 @@ def get_ingredient_by_id(id: int, db: Session):
     ingredient = db.query(Ingredient).filter(Ingredient.id == id).first()
     return ingredient
 
+#----------------------------------------------Menus--------------------------------------------------
+def create_menu(request: MenuSchema, db: Session):
+    menu = Menu(name=request.name, description=request.description)
+    db.add(menu)
+    db.commit()
+    db.refresh(menu)
+    return menu
+
+def get_menu_by_id(id: int, db: Session):
+    menu = db.query(Menu).filter(Menu.id == id).first()
+    return menu
+
+def update_menu(id: int, request: MenuSchema, db: Session):
+    menu = db.query(Menu).filter(Menu.id == id).first()
+    if not menu:
+        raise HTTPException(status_code=404, detail="Menu not found")
+    menu.name = request.name
+    menu.description = request.description
+    db.commit()
+    db.refresh(menu)
+    return menu
+
+def delete_menu(id: int, db: Session):
+    menu = db.query(Menu).filter(Menu.id == id).first()
+    if not menu:
+        raise HTTPException(status_code=404, detail="Menu not found")
+    db.delete(menu)
+    db.commit()
+    return None
+
+#----------------------------------------------Inventario-----------------------------------------------
+
+def create_inventory(request: InventorySchema, db: Session):
+    ingredient = db.query(Ingredient).filter(Ingredient.id == request.ingredient_id).first()
+    if not ingredient:
+        raise HTTPException(status_code=404, detail="Ingredient not found")
+
+    inventory = Inventory(ingredient_id=request.ingredient_id, quantity=request.quantity)
+    db.add(inventory)
+    db.commit()
+    db.refresh(inventory)
+    return inventory
+
+def get_inventory_by_id(id: int, db: Session):
+    inventory = db.query(Inventory).filter(Inventory.ingredient_id == id).first()
+    return inventory
+
+def update_inventory(id: int, request: InventorySchema, db: Session):
+    inventory = db.query(Inventory).filter(Inventory.ingredient_id == id).first()
+    if not inventory:
+        raise HTTPException(status_code=404, detail="Inventory not found")
+    inventory.quantity = request.quantity
+    db.commit()
+    db.refresh(inventory)
+    return inventory
+
+def delete_inventory(id: int, db: Session):
+    inventory = db.query(Inventory).filter(Inventory.ingredient_id == id).first()
+    if not inventory:
+        raise HTTPException(status_code=404, detail="Inventory not found")
+    db.delete(inventory)
+    db.commit()
+    return None
 

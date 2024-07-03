@@ -22,7 +22,7 @@ class DishSchema(BaseModel):
     created_at: Optional[str]
     updated_at: Optional[str]
     ingredients: List[int]
-
+    menu_id: int
     class Config:
         pass
 
@@ -37,15 +37,19 @@ class DishIngredientSchema(BaseModel):
 class MenuSchema(BaseModel):
     id: int
     name: str
+    description: str
     created_at: Optional[str]
 
     class Config:
         pass
 
-class MenuDishSchema(BaseModel):
-    menu_id: int
-    dish_id: int
+class InventorySchema(BaseModel):
+    ingredient_id: int
+    quantity: int
+    created_at: Optional[str]
+    updated_at: Optional[str]
 
     class Config:
         pass
+
 
