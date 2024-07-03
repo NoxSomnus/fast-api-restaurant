@@ -31,6 +31,10 @@ def get_dish_by_id(id: int, db: Session):
     dish = db.query(Dish).filter(Dish.id == id).first()
     return dish
 
+def get_all_dishes(db: Session):
+    dishes = db.query(Dish).all()
+    return dishes
+
 def update_dish(id: int, request: CreateDish, db: Session):
     dish = db.query(Dish).filter(Dish.id == id).first()
     if not dish:
@@ -78,6 +82,27 @@ def get_ingredient_by_id(id: int, db: Session):
     ingredient = db.query(Ingredient).filter(Ingredient.id == id).first()
     return ingredient
 
+def get_all_ingredients(db: Session):
+    ingredients = db.query(Ingredient).all()
+    return ingredients
+
+def update_ingredient(id: int, request: str, db: Session):
+    ingredient = db.query(Ingredient).filter(Ingredient.id == id).first()
+    if not ingredient:
+        raise HTTPException(status_code=404, detail="Ingredient not found")
+    ingredient.name = request
+    db.commit()
+    db.refresh(ingredient)
+    return ingredient
+
+def delete_ingredient(id: int, db: Session):
+    ingredient = db.query(Ingredient).filter(Ingredient.id == id).first()
+    if not ingredient:
+        raise HTTPException(status_code=404, detail="Ingredient not found")
+    db.delete(ingredient)
+    db.commit()
+    return None
+
 #----------------------------------------------Menus--------------------------------------------------
 def create_menu(request: MenuSchema, db: Session):
     menu = Menu(name=request.name, description=request.description)
@@ -89,6 +114,10 @@ def create_menu(request: MenuSchema, db: Session):
 def get_menu_by_id(id: int, db: Session):
     menu = db.query(Menu).filter(Menu.id == id).first()
     return menu
+
+def get_all_menus(db: Session):
+    menus = db.query(Menu).all()
+    return menus
 
 def update_menu(id: int, request: MenuSchema, db: Session):
     menu = db.query(Menu).filter(Menu.id == id).first()
@@ -123,6 +152,10 @@ def create_inventory(request: InventorySchema, db: Session):
 
 def get_inventory_by_id(id: int, db: Session):
     inventory = db.query(Inventory).filter(Inventory.ingredient_id == id).first()
+    return inventory
+
+def get_all_inventories(db: Session):
+    inventory = db.query(Inventory).all()
     return inventory
 
 def update_inventory(id: int, request: InventorySchema, db: Session):
@@ -163,6 +196,10 @@ def get_user_by_id(id: int, db: Session):
     user = db.query(User).filter(User.id == id).first()
     return user
 
+def get_all_users(db: Session):
+    users = db.query(User).all()
+    return users
+
 def update_user(id: int, request: UserSchema, db: Session):
     user = db.query(User).filter(User.id == id).first()
     if not user:
@@ -195,9 +232,37 @@ def create_order(request: OrderSchema, db: Session):
     if not dish:
         raise HTTPException(status_code=404, detail="Dish not found")
     
+    for ingredient in dish.ingredients:
+        ingredient_dish = db.query(Dish_Ingredient).filter(Dish_Ingredient.dish_id == dish.id, Dish_Ingredient.ingredient_id == ingredient.id).first()
+        if not ingredient_dish:
+            raise HTTPException(status_code=404, detail="Ingredient not found")
+        inventory = db.query(Inventory).filter(Inventory.ingredient_id == ingredient.id).first()
+        if not inventory:
+            raise HTTPException(status_code=404, detail="Inventory not found")
+        if inventory.quantity < ingredient_dish.quantity:
+            raise HTTPException(status_code=400, detail="Insufficient ingredient in inventory - {}".format(ingredient.name))
+        inventory.quantity -= ingredient_dish.quantity
+
     order = Order(user_id=user.id, dish_id=dish.id, quantity=request.quantity, status=request.status)
     db.add(order)
     db.commit()
     db.refresh(order)
+    
     return order
 
+def get_order_by_id(id: int, db: Session):
+    order = db.query(Order).filter(Order.id == id).first()
+    return order
+
+def update_order(id: int, status: str, db: Session):
+    order = db.query(Order).filter(Order.id == id).first()
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+    order.status = status
+    db.commit()
+    db.refresh(order)
+    return order
+
+def get_orders_by_user_id(id: int, db: Session):
+    orders = db.query(Order).filter(Order.user_id == id).all()
+    return orders
