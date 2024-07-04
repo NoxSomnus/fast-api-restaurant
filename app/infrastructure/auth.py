@@ -7,7 +7,8 @@ from starlette import status
 from passlib.context import CryptContext
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from jose import jwt, JWTError
-from domain import aggregates, schemas
+from infrastructure import models
+from domain import schemas
 from infrastructure.config import SessionLocal
 from application import handlers
 
@@ -37,7 +38,7 @@ class Token(BaseModel):
 
 
 def authenticate_user(username:str, password:str, db):
-    user = db.query(aggregates.User).filter(aggregates.User.email == username).first()
+    user = db.query(models.User).filter(models.User.email == username).first()
 
     if not user:
         print("aqui")
