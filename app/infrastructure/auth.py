@@ -38,7 +38,7 @@ class Token(BaseModel):
 
 
 def authenticate_user(username:str, password:str, db):
-    user = db.query(models.User).filter(models.User.email == username).first()
+    user = db.query(models.User).filter(models.User.username == username).first()
 
     if not user:
         print("aqui")
