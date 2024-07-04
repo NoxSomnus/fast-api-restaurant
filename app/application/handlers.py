@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from domain.aggregates import *
+from infrastructure.models import *
 from domain.schemas import *
 from application.requests import *
 from fastapi import HTTPException
